@@ -224,13 +224,15 @@ body {
 .monitor-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 30px; width: 100%; }
 
 .monitor-item {
-    font-size: 5rem;
-    font-weight: 900;
+    font-size: 2.5rem;
+    font-weight: 800;
     text-align: center;
-    padding: 20px;
+    padding: 24px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: var(--radius-md);
     animation: pulse 2s infinite;
+    text-transform: uppercase;
+    word-break: break-word;
 }
 
 .monitor-column.ready .monitor-item {

@@ -149,17 +149,17 @@ function renderMonitor() {
 
     orders.forEach(order => {
         if (order.status === 'preparing' || order.status === 'pending') {
-            prepList.appendChild(createMonitorItem(order.number));
+            prepList.appendChild(createMonitorItem(order.table_name));
         } else if (order.status === 'ready') {
-            readyList.appendChild(createMonitorItem(order.number, true));
+            readyList.appendChild(createMonitorItem(order.table_name, true));
         }
     });
 }
 
-function createMonitorItem(number, isReady = false) {
+function createMonitorItem(text, isReady = false) {
     const div = document.createElement('div');
     div.className = `monitor-item ${isReady ? 'ready-anim' : ''}`;
-    div.textContent = number;
+    div.textContent = text;
     return div;
 }
 
