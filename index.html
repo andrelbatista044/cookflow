@@ -3,68 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CookFlow - Sistema de Gestão</title>
+    <title>CookFlow - Bem-vindo</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="landing-page">
-    <script src="supabase.js"></script>
-    <script>
-        // Redirecionamento Imediato
-        async function checkInitialAuth() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                window.location.href = 'login.html';
-            } else {
-                // Se já estiver logado, mostra a landing
-                document.body.style.display = 'block';
-            }
-        }
-        document.body.style.display = 'none';
-        checkInitialAuth();
-    </script>
-
     <div class="landing-container">
         <header class="landing-header">
             <div class="logo large">
                 <span class="logo-icon">🔥</span>
                 <h1>Cook<span>Flow</span></h1>
             </div>
-            <p>Painel de Acesso Rápido</p>
+            <p>O fluxo perfeito para o seu restaurante.</p>
         </header>
 
         <main class="access-grid">
             <a href="totem.html" class="access-card">
                 <div class="card-icon">📱</div>
-                <h3>Totem / Pedidos</h3>
-                <span class="btn-primary">Entrar</span>
+                <h3>Totem / Salão</h3>
+                <p>Realize novos pedidos de forma rápida e intuitiva.</p>
+                <span class="btn-primary">Acessar</span>
             </a>
 
             <a href="cozinha.html" class="access-card">
                 <div class="card-icon">👨‍🍳</div>
                 <h3>Cozinha</h3>
-                <span class="btn-primary">Entrar</span>
-            </a>
-
-            <a href="caixa.html" class="access-card">
-                <div class="card-icon">💰</div>
-                <h3>Caixa</h3>
-                <span class="btn-primary">Entrar</span>
+                <p>Gerencie a preparação e o fluxo de saída dos pratos.</p>
+                <span class="btn-primary">Acessar</span>
             </a>
 
             <a href="monitor.html" class="access-card">
                 <div class="card-icon">📺</div>
-                <h3>Monitor</h3>
-                <span class="btn-primary">Entrar</span>
+                <h3>Monitor / TV</h3>
+                <p>Exiba os pedidos prontos para os clientes.</p>
+                <span class="btn-primary">Acessar</span>
             </a>
         </main>
 
         <div class="landing-actions">
-            <a href="admin.html" class="btn-secondary">⚙️ Admin Center (Restrito)</a>
-            <button onclick="signOut()" class="btn-secondary" style="margin-left: 10px;">Sair</button>
+            <button id="open-config" class="btn-secondary">⚙️ Configurar Supabase</button>
+        </div>
+
+        <footer class="landing-footer">
+            <p>&copy; 2024 CookFlow. Tecnologia para gastronomia.</p>
+        </footer>
+    </div>
+
+    <!-- Modal de Configuração -->
+    <div id="config-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Configuração do Supabase</h3>
+                <button class="close-modal" onclick="document.getElementById('config-modal').style.display='none'">&times;</button>
+            </div>
+            <form id="config-form">
+                <div class="form-group">
+                    <label>Supabase URL</label>
+                    <input type="text" id="supa-url" placeholder="https://xyz.supabase.co" required>
+                </div>
+                <div class="form-group">
+                    <label>Supabase Anon Key</label>
+                    <input type="password" id="supa-key" placeholder="eyJhbG..." required>
+                </div>
+                <p class="config-help">As chaves serão salvas apenas no seu navegador (localStorage).</p>
+                <button type="submit" class="btn-primary btn-large">Salvar e Reiniciar</button>
+            </form>
         </div>
     </div>
 
+    <script src="supabase.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

@@ -1,75 +1,38 @@
 // Configuração do Supabase
-const SUPABASE_URL = 'https://vmjipefjlgurqsymistj.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtamlwZWZqbGd1cnFzeW1pc3RqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Nzc3NDEsImV4cCI6MjA5MjM1Mzc0MX0.-KiHvPvgRRM65hIx5IWigMXiPZXT7sXqQzkR8I3cxjQ';
+// Prioriza localStorage para facilitar o setup sem mexer no código
+const SUPABASE_URL = localStorage.getItem('CF_URL') || 'SUA_SUPABASE_URL_AQUI';
+const SUPABASE_ANON_KEY = localStorage.getItem('CF_KEY') || 'SUA_SUPABASE_ANON_KEY_AQUI';
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabaseClient = null;
 
-// Cliente secundário apenas para criar usuários sem deslogar o admin
-const adminAuthClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession: false }
-});
-
-// --- AUTH & PROFILE ---
-async function signIn(email, password) {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    return { data, error };
+if (SUPABASE_URL !== 'SUA_SUPABASE_URL_AQUI') {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
-async function signOut() {
-    await supabaseClient.auth.signOut();
-    window.location.href = 'login.html';
-}
-
-async function getProfile() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return null;
-
-    // Tentamos buscar o perfil na tabela
-    const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('role, full_name')
-        .eq('id', user.id)
-        .single();
-    
-    // Se não encontrar o perfil, assume como 'funcionario' (segurança mínima)
-    const role = profile ? profile.role : 'funcionario';
-    const full_name = profile ? profile.full_name : user.email;
-    
-    return { ...user, role, full_name };
-}
-
-async function createEmployee(email, password, fullName) {
-    const { data, error } = await adminAuthClient.auth.signUp({
-        email,
-        password,
-        options: {
-            data: { full_name: fullName }
-        }
-    });
-    return { data, error };
-}
-
-// --- ADMIN FUNCTIONS ---
-async function getAllProfiles() {
-    const { data } = await supabaseClient.from('profiles').select('*');
-    return data || [];
-}
-
-async function updateProfileRole(id, role) {
-    await supabaseClient.from('profiles').update({ role }).eq('id', id);
-}
-
-// --- ORDERS ---
+// Buscar todos os pedidos com seus itens
 async function getOrders() {
-    const { data } = await supabaseClient.from('orders').select('*, order_items (*)').order('created_at', { ascending: false });
-    return data || [];
+    if (!supabaseClient) return [];
+    const { data, error } = await supabaseClient
+        .from('orders')
+        .select('*, order_items (*)')
+        .order('created_at', { ascending: false });
+    
+    if (error) {
+        console.error('Erro ao buscar pedidos:', error);
+        return [];
+    }
+    return data;
 }
 
-async function createOrder(table_name, items, total = 0) {
+// Criar um pedido
+async function createOrder(table_name, items) {
+    if (!supabaseClient) throw new Error('Supabase não configurado');
+    
     const { data: orderData, error: orderError } = await supabaseClient
         .from('orders')
-        .insert([{ table_name, total, status: 'pending' }])
-        .select().single();
+        .insert([{ table_name: table_name }])
+        .select()
+        .single();
 
     if (orderError) throw orderError;
 
@@ -79,23 +42,38 @@ async function createOrder(table_name, items, total = 0) {
         quantity: item.quantity
     }));
 
-    await supabaseClient.from('order_items').insert(itemsToInsert);
+    const { error: itemsError } = await supabaseClient
+        .from('order_items')
+        .insert(itemsToInsert);
+
+    if (itemsError) throw itemsError;
+
     return orderData;
 }
 
-async function updateOrderStatus(id, status) {
-    await supabaseClient.from('orders').update({ status }).eq('id', id);
+async function updateOrderStatus(orderId, newStatus) {
+    if (!supabaseClient) return;
+    const { error } = await supabaseClient
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+
+    if (error) throw error;
 }
 
-async function deleteOrder(id) {
-    await supabaseClient.from('orders').delete().eq('id', id);
+async function deleteOrder(orderId) {
+    if (!supabaseClient) return;
+    const { error } = await supabaseClient
+        .from('orders')
+        .delete()
+        .eq('id', orderId);
+
+    if (error) throw error;
 }
 
-// --- STATS ---
-async function getDashboardStats() {
-    const today = new Date(); today.setHours(0,0,0,0);
-    const { count: totalToday } = await supabaseClient.from('orders').select('*', { count: 'exact', head: true }).gte('created_at', today.toISOString());
-    const { data: revenueData } = await supabaseClient.from('orders').select('total');
-    const revenue = revenueData ? revenueData.reduce((acc, curr) => acc + (curr.total || 0), 0) : 0;
-    return { totalToday, revenue };
+// Função para salvar chaves e reiniciar
+function saveConfig(url, key) {
+    localStorage.setItem('CF_URL', url);
+    localStorage.setItem('CF_KEY', key);
+    window.location.reload();
 }
