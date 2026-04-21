@@ -19,13 +19,19 @@ async function getProfile() {
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) return null;
 
-    const { data: profile } = await supabaseClient
+    const { data: profile, error } = await supabaseClient
         .from('profiles')
-        .select('*')
+        .select('role, full_name')
         .eq('id', user.id)
         .single();
     
-    return { ...user, ...profile };
+    if (error || !profile) {
+        console.warn('Perfil não encontrado para o usuário:', user.id);
+        return { ...user, role: 'sem_perfil' };
+    }
+    
+    // Retorna o usuário com o cargo da nossa tabela profiles
+    return { ...user, role: profile.role, full_name: profile.full_name };
 }
 
 // --- ADMIN FUNCTIONS ---
