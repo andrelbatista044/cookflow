@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CookFlow - Admin Center</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="admin-page">
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="logo-icon">🔥</span>
+                <h1>Cook<span>Flow</span></h1>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active"><a href="admin.html">Dashboard</a></li>
+                    <li><a href="cozinha.html">Cozinha</a></li>
+                    <li><a href="totem.html">Totem</a></li>
+                    <li><a href="#" onclick="signOut()">Sair</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="page-info">
+                    <h2>Admin Center</h2>
+                    <p>Visão geral do seu restaurante.</p>
+                </div>
+            </header>
+
+            <div class="admin-grid">
+                <div class="stat-card">
+                    <h3>Pedidos (Hoje)</h3>
+                    <p id="stat-total-today">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Receita Estimada</h3>
+                    <p id="stat-revenue">R$ 0,00</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Ticket Médio</h3>
+                    <p id="stat-avg">R$ 0,00</p>
+                </div>
+            </div>
+
+            <section class="recent-orders">
+                <h3>Pedidos Recentes</h3>
+                <div class="table-container">
+                    <table id="recent-orders-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Mesa</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Preenchido via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="supabase.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Lógica específica do Admin
+        async function initAdmin() {
+            const user = await getUser();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const stats = await getStats();
+            document.getElementById('stat-total-today').textContent = stats.totalToday;
+            document.getElementById('stat-revenue').textContent = `R$ ${stats.totalRevenue.toFixed(2)}`;
+            
+            const avg = stats.totalToday > 0 ? stats.totalRevenue / stats.totalToday : 0;
+            document.getElementById('stat-avg').textContent = `R$ ${avg.toFixed(2)}`;
+
+            const orders = await getOrders();
+            const tbody = document.querySelector('#recent-orders-table tbody');
+            tbody.innerHTML = orders.slice(0, 10).map(o => `
+                <tr>
+                    <td>${o.number}</td>
+                    <td>${o.table_name}</td>
+                    <td>R$ ${o.total.toFixed(2)}</td>
+                    <td><span class="status-badge ${o.status}">${o.status}</span></td>
+                    <td>${new Date(o.created_at).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', initAdmin);
+    </script>
+</body>
+</html>

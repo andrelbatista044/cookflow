@@ -1,17 +1,30 @@
-// Configuração do Supabase
-// Prioriza localStorage para facilitar o setup sem mexer no código
-const SUPABASE_URL = localStorage.getItem('CF_URL') || 'SUA_SUPABASE_URL_AQUI';
-const SUPABASE_ANON_KEY = localStorage.getItem('CF_KEY') || 'SUA_SUPABASE_ANON_KEY_AQUI';
+// Configuração do Supabase (Constante)
+const SUPABASE_URL = 'https://vmjipefjlgurqsymistj.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtamlwZWZqbGd1cnFzeW1pc3RqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Nzc3NDEsImV4cCI6MjA5MjM1Mzc0MX0.-KiHvPvgRRM65hIx5IWigMXiPZXT7sXqQzkR8I3cxjQ';
 
-let supabaseClient = null;
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-if (SUPABASE_URL !== 'SUA_SUPABASE_URL_AQUI') {
-    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// --- FUNÇÕES DE AUTENTICAÇÃO ---
+async function signIn(email, password) {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password,
+    });
+    return { data, error };
 }
 
-// Buscar todos os pedidos com seus itens
+async function signOut() {
+    await supabaseClient.auth.signOut();
+    window.location.href = 'login.html';
+}
+
+async function getUser() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    return user;
+}
+
+// --- FUNÇÕES DE DADOS (PEDIDOS) ---
 async function getOrders() {
-    if (!supabaseClient) return [];
     const { data, error } = await supabaseClient
         .from('orders')
         .select('*, order_items (*)')
@@ -24,10 +37,7 @@ async function getOrders() {
     return data;
 }
 
-// Criar um pedido
 async function createOrder(table_name, items) {
-    if (!supabaseClient) throw new Error('Supabase não configurado');
-    
     const { data: orderData, error: orderError } = await supabaseClient
         .from('orders')
         .insert([{ table_name: table_name }])
@@ -52,7 +62,6 @@ async function createOrder(table_name, items) {
 }
 
 async function updateOrderStatus(orderId, newStatus) {
-    if (!supabaseClient) return;
     const { error } = await supabaseClient
         .from('orders')
         .update({ status: newStatus })
@@ -62,7 +71,6 @@ async function updateOrderStatus(orderId, newStatus) {
 }
 
 async function deleteOrder(orderId) {
-    if (!supabaseClient) return;
     const { error } = await supabaseClient
         .from('orders')
         .delete()
@@ -71,9 +79,26 @@ async function deleteOrder(orderId) {
     if (error) throw error;
 }
 
-// Função para salvar chaves e reiniciar
-function saveConfig(url, key) {
-    localStorage.setItem('CF_URL', url);
-    localStorage.setItem('CF_KEY', key);
-    window.location.reload();
+// --- FUNÇÕES DE ADMIN (ESTATÍSTICAS) ---
+async function getStats() {
+    // Total de pedidos hoje
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const { count: totalToday } = await supabaseClient
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', today.toISOString());
+
+    // Receita Total (Soma de todos os pedidos que não foram deletados)
+    // Nota: Como não salvamos o total no banco com o novo esquema (podemos somar os itens ou adicionar o campo total de volta)
+    // Vou assumir que o campo 'total' ainda é útil no cabeçalho do pedido ou recalculado.
+    // Para simplificar agora, vou buscar o total da tabela orders.
+    const { data: revenueData } = await supabaseClient
+        .from('orders')
+        .select('total');
+    
+    const totalRevenue = revenueData ? revenueData.reduce((acc, curr) => acc + (curr.total || 0), 0) : 0;
+
+    return { totalToday, totalRevenue };
 }

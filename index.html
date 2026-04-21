@@ -44,34 +44,12 @@
         </main>
 
         <div class="landing-actions">
-            <button id="open-config" class="btn-secondary">⚙️ Configurar Supabase</button>
+            <a href="login.html" class="btn-secondary">⚙️ Admin Center</a>
         </div>
 
         <footer class="landing-footer">
             <p>&copy; 2024 CookFlow. Tecnologia para gastronomia.</p>
         </footer>
-    </div>
-
-    <!-- Modal de Configuração -->
-    <div id="config-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Configuração do Supabase</h3>
-                <button class="close-modal" onclick="document.getElementById('config-modal').style.display='none'">&times;</button>
-            </div>
-            <form id="config-form">
-                <div class="form-group">
-                    <label>Supabase URL</label>
-                    <input type="text" id="supa-url" placeholder="https://xyz.supabase.co" required>
-                </div>
-                <div class="form-group">
-                    <label>Supabase Anon Key</label>
-                    <input type="password" id="supa-key" placeholder="eyJhbG..." required>
-                </div>
-                <p class="config-help">As chaves serão salvas apenas no seu navegador (localStorage).</p>
-                <button type="submit" class="btn-primary btn-large">Salvar e Reiniciar</button>
-            </form>
-        </div>
     </div>
 
     <script src="supabase.js"></script>
