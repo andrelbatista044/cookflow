@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CookFlow - Totem de Pedidos</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="totem-page">
+    <nav class="back-nav">
+        <a href="index.html">← Voltar</a>
+    </nav>
+
+    <main class="totem-container">
+        <header class="totem-header">
+            <h1>Faça seu Pedido</h1>
+            <p>Rápido, fácil e direto.</p>
+        </header>
+
+        <section class="order-box">
+            <form id="order-form">
+                <div class="form-group">
+                    <label>Sua Mesa ou Nome</label>
+                    <input type="text" id="table-number" placeholder="Ex: Mesa 12" required>
+                </div>
+                <div class="form-group">
+                    <label>O que vai pedir hoje?</label>
+                    <textarea id="order-items" rows="5" placeholder="Ex: 2x X-Salada, 1x Suco de Laranja..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Valor Total (Opcional)</label>
+                    <input type="number" id="order-total" step="0.01" value="0.00">
+                </div>
+                <button type="submit" class="btn-primary btn-large">🔥 Confirmar Pedido</button>
+            </form>
+        </section>
+
+        <div id="success-message" class="toast hidden">
+            ✅ Pedido enviado com sucesso para a cozinha!
+        </div>
+    </main>
+
+    <script src="supabase.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
