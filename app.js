@@ -21,25 +21,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Proteção de Rotas (RBAC)
 async function checkAccess() {
     const path = window.location.pathname;
-    if (path.includes('login.html') || path.includes('index.html') || path.includes('monitor.html')) return;
+    // Páginas públicas
+    if (path.includes('login.html') || path === '/' || path.includes('index.html') || path.includes('monitor.html')) return;
 
     currentUser = await getProfile();
+    console.log('Usuário Logado:', currentUser); // Debug para você ver o cargo no F12
+
     if (!currentUser) {
         window.location.href = 'login.html';
         return;
     }
 
-    // Regras de Acesso
-    if (path.includes('admin.html') && currentUser.role !== 'admin') {
-        alert('Acesso restrito para administradores.');
+    const role = (currentUser.role || '').toLowerCase();
+
+    // Regras de Acesso (Mais flexíveis com a URL)
+    if (path.includes('admin') && role !== 'admin') {
+        alert('Acesso restrito para administradores. Seu cargo: ' + role);
         window.location.href = 'index.html';
     }
-    if (path.includes('caixa.html') && !['admin', 'caixa'].includes(currentUser.role)) {
-        alert('Acesso restrito para o Caixa.');
+    if (path.includes('caixa') && !['admin', 'caixa'].includes(role)) {
+        alert('Acesso restrito para o Caixa. Seu cargo: ' + role);
         window.location.href = 'index.html';
     }
-    if (path.includes('cozinha.html') && !['admin', 'cozinha'].includes(currentUser.role)) {
-        alert('Acesso restrito para a Cozinha.');
+    if (path.includes('cozinha') && !['admin', 'cozinha'].includes(role)) {
+        alert('Acesso restrito para a Cozinha. Seu cargo: ' + role);
         window.location.href = 'index.html';
     }
 }
