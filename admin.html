@@ -41,6 +41,18 @@
                 <div class="stat-card"><h3>Receita</h3><p id="stat-revenue">R$ 0,00</p></div>
             </div>
 
+            <!-- New User Form -->
+            <section class="admin-section">
+                <h3>Adicionar Novo Funcionário</h3>
+                <form id="create-user-form" class="admin-form">
+                    <input type="text" id="new-user-name" placeholder="Nome Completo" required>
+                    <input type="email" id="new-user-email" placeholder="E-mail" required>
+                    <input type="password" id="new-user-password" placeholder="Senha" required>
+                    <button type="submit" class="btn-primary">Criar Conta</button>
+                </form>
+                <p id="create-user-msg" class="hidden" style="margin-top:10px;"></p>
+            </section>
+
             <!-- User Management -->
             <section class="admin-section">
                 <h3>Equipe & Permissões</h3>
@@ -88,21 +100,7 @@
             document.getElementById('stat-revenue').textContent = `R$ ${stats.revenue.toFixed(2)}`;
 
             // Users
-            const users = await getAllProfiles();
-            const userBody = document.querySelector('#users-table tbody');
-            userBody.innerHTML = users.map(u => `
-                <tr>
-                    <td>${u.full_name || 'Sem nome'}</td>
-                    <td>
-                        <select onchange="updateUserRole('${u.id}', this.value)" class="role-select">
-                            <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
-                            <option value="caixa" ${u.role === 'caixa' ? 'selected' : ''}>Caixa</option>
-                            <option value="cozinha" ${u.role === 'cozinha' ? 'selected' : ''}>Cozinha</option>
-                        </select>
-                    </td>
-                    <td><button class="btn-action small" onclick="alert('Funcionalidade de deletar via Admin API requer Edge Function')">Remover</button></td>
-                </tr>
-            `).join('');
+            renderUserTable();
 
             // Orders
             const orders = await getOrders();
@@ -113,6 +111,45 @@
                     <td>${o.table_name}</td>
                     <td>R$ ${o.total.toFixed(2)}</td>
                     <td><span class="status-badge ${o.status}">${o.status}</span></td>
+                </tr>
+            `).join('');
+
+            // Setup Create User Form
+            const userForm = document.getElementById('create-user-form');
+            userForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('new-user-name').value;
+                const email = document.getElementById('new-user-email').value;
+                const pass = document.getElementById('new-user-password').value;
+                const msg = document.getElementById('create-user-msg');
+
+                const { error } = await createEmployee(email, pass, name);
+                if (error) {
+                    msg.textContent = "Erro: " + error.message;
+                    msg.style.color = "var(--primary)";
+                } else {
+                    msg.textContent = "Funcionário criado com sucesso!";
+                    msg.style.color = "#34C759";
+                    userForm.reset();
+                    setTimeout(() => renderUserTable(), 1000); // Recarrega a lista
+                }
+                msg.classList.remove('hidden');
+            };
+        }
+
+        async function renderUserTable() {
+            const users = await getAllProfiles();
+            const userBody = document.querySelector('#users-table tbody');
+            userBody.innerHTML = users.map(u => `
+                <tr>
+                    <td>${u.full_name || 'Sem nome'}</td>
+                    <td>
+                        <select onchange="updateUserRole('${u.id}', this.value)" class="role-select">
+                            <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+                            <option value="funcionario" ${u.role === 'funcionario' ? 'selected' : ''}>Funcionário</option>
+                        </select>
+                    </td>
+                    <td><button class="btn-action small" onclick="alert('Funcionalidade restrita')">Remover</button></td>
                 </tr>
             `).join('');
         }

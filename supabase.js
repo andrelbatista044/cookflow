@@ -4,6 +4,11 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Cliente secundário apenas para criar usuários sem deslogar o admin
+const adminAuthClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false }
+});
+
 // --- AUTH & PROFILE ---
 async function signIn(email, password) {
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -31,6 +36,17 @@ async function getProfile() {
     const full_name = profile ? profile.full_name : user.email;
     
     return { ...user, role, full_name };
+}
+
+async function createEmployee(email, password, fullName) {
+    const { data, error } = await adminAuthClient.auth.signUp({
+        email,
+        password,
+        options: {
+            data: { full_name: fullName }
+        }
+    });
+    return { data, error };
 }
 
 // --- ADMIN FUNCTIONS ---

@@ -405,7 +405,24 @@ th { background: rgba(255, 255, 255, 0.02); color: var(--text-gray); font-weight
 .status-badge.preparing { color: var(--secondary); }
 .status-badge.ready { color: #34C759; }
 
-/* Responsividade Admin */.role-select {
+/* Responsividade Admin */.admin-form {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.admin-form input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.role-select {
     background: rgba(0,0,0,0.2);
     color: white;
     border: 1px solid rgba(255,255,255,0.1);
